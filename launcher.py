@@ -1,19 +1,18 @@
-import os, re, requests, shutil, subprocess, urllib.request, time
+import os, re, requests, subprocess, urllib.request, time
 from tqdm import tqdm
 from win32api import GetFileVersionInfo, LOWORD, HIWORD
 
 # Link
 GITHUB_LINK = "https://github.com/KingSlendy"
-GITHUB_REPO = f"I-Wanna-Start-A-Party{"" if not os.path.exists("test") else "-Testers"}"
+GITHUB_REPO = f"@@NAME_DASHES@@"
 
 # Names
 DATA_NAME = "data.win"
 GAME_NAME = "Game.exe"
-ZIP_NAME = "I Wanna Start A Party.zip"
+ZIP_NAME = "@@NAME_SHORT@@.zip"
 
 # OS Paths
 CURRENT_PATH = os.getcwd()
-APPDATA_PATH = f"{os.getenv("LOCALAPPDATA")}\\I_Wanna_Start_A_Party\\{GAME_NAME}"
 
 # File Paths
 DATA_PATH = f"{CURRENT_PATH}\\{DATA_NAME}"
@@ -44,12 +43,8 @@ def get_version_number(path):
 
 
 def main():
-    if os.path.exists(APPDATA_PATH):
-        shutil.copyfile(APPDATA_PATH, GAME_PATH)
-        os.remove(APPDATA_PATH)
-
     if not os.path.exists(DATA_PATH) or os.path.getsize(DATA_PATH) < 30000000 or not os.path.exists(GAME_PATH):
-        print("I Wanna Start A Party has not been found, exiting!")
+        print("@@NAME_FULL@@ has not been found, exiting!")
         return
 
     if os.path.exists(ZIP_PATH):
@@ -83,10 +78,10 @@ def main():
 
     print(f"Update version found: {new_game_version}!")
     print(f"Downloading new version...")
-    url_game_version = f"{GITHUB_LINK}/{GITHUB_REPO}/releases/download/{new_game_version}/I.Wanna.Start.A.Party.zip"
+    url_game_version = f"{GITHUB_LINK}/{GITHUB_REPO}/releases/download/{new_game_version}/@@NAME_DOTS@@.zip"
 
     try:
-        with DownloadProgressBar(unit = 'B', unit_scale = True, miniters = 1, desc = "I Wanna Start A Party") as bar:
+        with DownloadProgressBar(unit = 'B', unit_scale = True, miniters = 1, desc = "@@NAME_FULL@@") as bar:
             urllib.request.urlretrieve(url_game_version, filename = ZIP_PATH, reporthook = bar.update_to)
     except:
         print("An error occurred during the downloading update process.")
@@ -94,13 +89,13 @@ def main():
         return
 
     print("Update downloaded successfully!")
-    print("Extracting and executing I Wanna Start A Party...")
+    print("Extracting and executing @@NAME_FULL@@...")
 
     extract_execute()
 
 
 def execute():
-    print("Executing I Wanna Start A Party...")
+    print("Executing @@NAME_FULL@@...")
     subprocess.Popen(f"start \"\" \"{GAME_PATH}\" -launch", shell = True)
     time.sleep(0.5)
 
