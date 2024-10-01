@@ -3,6 +3,7 @@ import os, shutil, subprocess
 def main():
     print("Welcome to I Wanna Launcher!")
     name = input("What is the name of your fangame?: ")
+    username = input("What is your GitHub username?: ")
     print("Generating launcher...")
     
     name_full = name
@@ -13,6 +14,7 @@ def main():
     with open("launcher.py", "r") as file:
         data = file.read()
 
+    data = data.replace("@@USERNAME@@", username)
     data = data.replace("@@NAME_FULL@@", name_full)
     data = data.replace("@@NAME_DASHES@@", name_dashes)
     data = data.replace("@@NAME_DOTS@@", name_dots)

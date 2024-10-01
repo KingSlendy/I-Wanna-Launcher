@@ -3,7 +3,7 @@ from tqdm import tqdm
 from win32api import GetFileVersionInfo, LOWORD, HIWORD
 
 # Link
-GITHUB_LINK = "https://github.com/KingSlendy"
+GITHUB_LINK = "https://github.com/@@USERNAME@@"
 GITHUB_REPO = f"@@NAME_DASHES@@-Releases"
 
 # Names
