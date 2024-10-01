@@ -7,7 +7,6 @@ GITHUB_LINK = "https://github.com/@@USERNAME@@"
 GITHUB_REPO = f"@@NAME_DASHES@@-Releases"
 
 # Names
-DATA_NAME = "data.win"
 GAME_NAME = "Game.exe"
 ZIP_NAME = "@@NAME_SHORT@@.zip"
 
@@ -15,7 +14,6 @@ ZIP_NAME = "@@NAME_SHORT@@.zip"
 CURRENT_PATH = os.getcwd()
 
 # File Paths
-DATA_PATH = f"{CURRENT_PATH}\\{DATA_NAME}"
 GAME_PATH = f"{CURRENT_PATH}\\{GAME_NAME}"
 ZIP_PATH = f"{CURRENT_PATH}\\{ZIP_NAME}"
 
@@ -43,7 +41,7 @@ def get_version_number(path):
 
 
 def main():
-    if not os.path.exists(DATA_PATH) or os.path.getsize(DATA_PATH) < 30000000 or not os.path.exists(GAME_PATH):
+    if not os.path.exists(GAME_PATH):
         print("@@NAME_FULL@@ has not been found, exiting!")
         return
 
