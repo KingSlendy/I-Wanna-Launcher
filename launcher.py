@@ -4,7 +4,7 @@ from win32api import GetFileVersionInfo, LOWORD, HIWORD
 
 # Link
 GITHUB_LINK = "https://github.com/KingSlendy"
-GITHUB_REPO = f"@@NAME_DASHES@@"
+GITHUB_REPO = f"@@NAME_DASHES@@-Releases"
 
 # Names
 DATA_NAME = "data.win"
