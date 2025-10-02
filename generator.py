@@ -4,12 +4,15 @@ def main():
     print("Welcome to I Wanna Launcher!")
     name = input("What is the name of your fangame?: ")
     username = input("What is your GitHub username?: ")
+    releases = input("Wanna use -Releases after the GitHub repository name? (Y/N): ").lower()
     print("Generating launcher...")
     
     name_full = name
     name_dashes = name.replace(" ", "-")
     name_dots = name.replace(" ", ".")
     name_short = "".join([x[0] for x in name.split(" ")])
+    releases = releases if releases in ("y", "n") else "y"
+    releases = "-Releases" if releases else ""
 
     with open("launcher.py", "r") as file:
         data = file.read()
@@ -19,6 +22,7 @@ def main():
     data = data.replace("@@NAME_DASHES@@", name_dashes)
     data = data.replace("@@NAME_DOTS@@", name_dots)
     data = data.replace("@@NAME_SHORT@@", name_short)
+    data = data.replace("@@USE_RELEASES@@", releases)
 
     with open("temp-launcher.py", "w") as file:
         file.write(data)

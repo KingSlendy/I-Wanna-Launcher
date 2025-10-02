@@ -4,7 +4,7 @@ from win32api import GetFileVersionInfo, LOWORD, HIWORD
 
 # Link
 GITHUB_LINK = "https://github.com/@@USERNAME@@"
-GITHUB_REPO = f"@@NAME_DASHES@@-Releases"
+GITHUB_REPO = f"@@NAME_DASHES@@@@USE_RELEASES@@"
 
 # Names
 GAME_NAME = "Game.exe"
@@ -100,6 +100,12 @@ def execute():
 
 def extract_execute():
     subprocess.Popen(f"start /B /wait tar -xvf \"{ZIP_PATH}\" && del \"{ZIP_PATH}\" && start \"\" \"{GAME_PATH}\" -launch", shell = True)
+
+    try:
+        subprocess.Popen(f"cscript //nologo \"unzip.vbs\" \"{ZIP_PATH}\" \"{CURRENT_PATH}\" && del \"{ZIP_PATH}\" && start \"\" \"{GAME_PATH}\" -launch", shell = True)
+    except:
+        print("Couldn't extract ZIP file, please extract @@NAME_FULL@@.zip manually.")
+        time.sleep(0.5)
 
 
 if __name__ == "__main__":
