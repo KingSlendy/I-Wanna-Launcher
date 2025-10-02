@@ -99,8 +99,6 @@ def execute():
 
 
 def extract_execute():
-    subprocess.Popen(f"start /B /wait tar -xvf \"{ZIP_PATH}\" && del \"{ZIP_PATH}\" && start \"\" \"{GAME_PATH}\" -launch", shell = True)
-
     try:
         subprocess.Popen(f"cscript //nologo \"unzip.vbs\" \"{ZIP_PATH}\" \"{CURRENT_PATH}\" && del \"{ZIP_PATH}\" && start \"\" \"{GAME_PATH}\" -launch", shell = True)
     except:
