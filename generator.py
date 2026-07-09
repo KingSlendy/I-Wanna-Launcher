@@ -38,18 +38,18 @@ def main():
     with open("temp-launcher.py", "w") as file:
         file.write(data)
 
-    #libraries = ["requests", "tqdm", "pywin32", "pyinstaller"]
-
-    #for library in libraries:
-    #    subprocess.run(f"{PYTHON_PATH} -m pip install {library}")
+    temp_launcher_folder = f"{GENERATED_FOLDER}\\temp-launcher.exe"
+    launcher_folder = f"{GENERATED_FOLDER}\\{name_full}.exe"
 
     subprocess.run(f"{PYTHON_PATH} -m PyInstaller -F {icon} temp-launcher.py")
     os.remove("temp-launcher.py")
     shutil.rmtree("build")
     os.remove("temp-launcher.spec")
-    shutil.copyfile("dist\\temp-launcher.exe", f"{GENERATED_FOLDER}\\temp-launcher.exe")
+    shutil.copyfile("dist\\temp-launcher.exe", temp_launcher_folder)
     shutil.rmtree("dist")
-    os.rename(f"{GENERATED_FOLDER}\\temp-launcher.exe", f"{GENERATED_FOLDER}\\{name_full}.exe")
+    os.rename(temp_launcher_folder, launcher_folder)
+    print()
+    print(f"Launcher generated succesfully on: {launcher_folder}!")
 
     
 if __name__ == "__main__":

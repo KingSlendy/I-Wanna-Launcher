@@ -3,8 +3,9 @@ from tqdm import tqdm
 from win32api import GetFileVersionInfo, LOWORD, HIWORD
 
 # Link
-GITHUB_LINK = "https://github.com/@@USERNAME@@"
+GITHUB_LINK = f"https://api.github.com/repos/@@USERNAME@@"
 GITHUB_REPO = f"@@NAME_DASHES@@@@USE_RELEASES@@"
+GITHUB_RELEASES = f"{GITHUB_LINK}/{GITHUB_REPO}/releases/latest"
 
 # Names
 GAME_NAME = "Game.exe"
@@ -62,8 +63,8 @@ def main():
     print("Validating new version...")
 
     try:
-        http_tag_content = requests.get(f"{GITHUB_LINK}/{GITHUB_REPO}/releases/latest").content.decode("utf-8")
-        new_game_version = re.search(r"<title>.*(\d+.\d+.\d+.\d+t?).*</title>", http_tag_content)[1]
+        game_release = requests.get(GITHUB_RELEASES).json()
+        new_game_version = game_release["tag_name"]
     except:
         print("An error occurred during the version validation process.")
         execute()
@@ -76,11 +77,11 @@ def main():
 
     print(f"Update version found: {new_game_version}!")
     print(f"Downloading new version...")
-    url_game_version = f"{GITHUB_LINK}/{GITHUB_REPO}/releases/download/{new_game_version}/@@NAME_DOTS@@.zip"
+    url_game_zip = game_release["zipball_url"]
 
     try:
         with DownloadProgressBar(unit = 'B', unit_scale = True, miniters = 1, desc = "@@NAME_FULL@@") as bar:
-            urllib.request.urlretrieve(url_game_version, filename = ZIP_PATH, reporthook = bar.update_to)
+            urllib.request.urlretrieve(url_game_zip, filename = ZIP_PATH, reporthook = bar.update_to)
     except:
         print("An error occurred during the downloading update process.")
         execute()
