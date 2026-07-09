@@ -17,13 +17,16 @@ def main():
     name_short = "".join([x[0] for x in name.split(" ")])
     releases = releases if releases in ("y", "n") else "y"
     releases = "-Releases" if releases == "y" else ""
+    temp_launcher_folder = f"{GENERATED_FOLDER}\\temp-launcher.exe"
+    launcher_folder = f"{GENERATED_FOLDER}\\{name_full}.exe"
+    icon_folder = f"{GENERATED_FOLDER}\\icon.ico"
     icon = ""
 
-    if os.path.exists(f"{GENERATED_FOLDER}\\icon.ico"):
-        icon = f"--icon={GENERATED_FOLDER}\\icon.ico"
+    if os.path.exists(icon_folder):
+        icon = f"--icon={icon_folder}"
 
-    if os.path.exists(f"{GENERATED_FOLDER}\\{name_full}.exe"):
-        os.remove(f"{GENERATED_FOLDER}\\{name_full}.exe")
+    if os.path.exists(launcher_folder):
+        os.remove(launcher_folder)
 
     with open(f"{PYTHON_FOLDER}\\launcher.py", "r") as file:
         data = file.read()
@@ -37,9 +40,6 @@ def main():
 
     with open("temp-launcher.py", "w") as file:
         file.write(data)
-
-    temp_launcher_folder = f"{GENERATED_FOLDER}\\temp-launcher.exe"
-    launcher_folder = f"{GENERATED_FOLDER}\\{name_full}.exe"
 
     subprocess.run(f"{PYTHON_PATH} -m PyInstaller -F {icon} temp-launcher.py")
     os.remove("temp-launcher.py")
