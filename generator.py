@@ -41,15 +41,18 @@ def main():
     with open("temp-launcher.py", "w") as file:
         file.write(data)
 
-    subprocess.run(f"{PYTHON_PATH} -m PyInstaller -F {icon} temp-launcher.py")
-    os.remove("temp-launcher.py")
-    shutil.rmtree("build")
-    os.remove("temp-launcher.spec")
-    shutil.copyfile("dist\\temp-launcher.exe", temp_launcher_folder)
-    shutil.rmtree("dist")
-    os.rename(temp_launcher_folder, launcher_folder)
-    print()
-    print(f"Launcher generated succesfully on: {launcher_folder}!")
+    try:
+        subprocess.run(f"{PYTHON_PATH} -m PyInstaller -F {icon} temp-launcher.py")
+        os.remove("temp-launcher.py")
+        shutil.rmtree("build")
+        os.remove("temp-launcher.spec")
+        shutil.copyfile("dist\\temp-launcher.exe", temp_launcher_folder)
+        shutil.rmtree("dist")
+        os.rename(temp_launcher_folder, launcher_folder)
+        print()
+        print(f"Launcher generated succesfully on: {launcher_folder}!")
+    except Exception as ex:
+        print(f"Error occurred during the launcher generation process...\n{ex}")
 
     
 if __name__ == "__main__":
