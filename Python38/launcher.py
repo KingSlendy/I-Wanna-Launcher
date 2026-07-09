@@ -9,7 +9,7 @@ GITHUB_RELEASES = f"{GITHUB_LINK}/{GITHUB_REPO}/releases/latest"
 
 # Names
 GAME_NAME = "Game.exe"
-ZIP_NAME = "@@NAME_SHORT@@.zip"
+ZIP_NAME = "@@NAME_DOTS@@.zip"
 
 # OS Paths
 CURRENT_PATH = os.getcwd()
@@ -77,18 +77,26 @@ def main():
 
     print(f"Update version found: {new_game_version}!")
     print(f"Downloading new version...")
-    url_game_zip = game_release["zipball_url"]
+
+    for asset in game_release["assets"]:
+        if asset["name"] == ZIP_NAME:
+            url_game_zip = asset
+            break
+    else:
+        print(f"Could not find {ZIP_NAME} in the latest release.")
+        execute()
+        return
 
     try:
         with DownloadProgressBar(unit = 'B', unit_scale = True, miniters = 1, desc = "@@NAME_FULL@@") as bar:
             urllib.request.urlretrieve(url_game_zip, filename = ZIP_PATH, reporthook = bar.update_to)
     except:
-        print("An error occurred during the downloading update process.")
+        print(f"An error occurred downloading {ZIP_NAME} from the latest release.")
         execute()
         return
 
-    print("Update downloaded successfully!")
-    print("Extracting and executing @@NAME_FULL@@...")
+    print(f"@@NAME_FULL@@ version {new_game_version} downloaded successfully!")
+    print(f"Extracting and executing {ZIP_NAME}...")
 
     extract_execute()
 
