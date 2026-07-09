@@ -95,7 +95,7 @@ def main():
         execute()
         return
 
-    print(f"@@NAME_FULL@@ version {new_game_version} downloaded successfully!")
+    print(f"@@NAME_FULL@@ {new_game_version} downloaded successfully!")
     print(f"Extracting and executing {ZIP_NAME}...")
 
     extract_execute()
