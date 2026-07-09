@@ -80,7 +80,7 @@ def main():
 
     for asset in game_release["assets"]:
         if asset["name"] == ZIP_NAME:
-            url_game_zip = asset
+            url_game_zip = asset["browser_download_url"]
             break
     else:
         print(f"Could not find {ZIP_NAME} in the latest release.")
