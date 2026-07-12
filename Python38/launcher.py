@@ -156,7 +156,13 @@ def execute():
 
 def extract_execute():
     try:
-        subprocess.Popen(f"cscript //nologo \"unzip.vbs\" \"{ZIP_PATH}\" \"{CURRENT_PATH}\" && del \"{ZIP_PATH}\" && start \"\" \"{GAME_PATH}\" -launch", shell = True)
+        command = (
+            f'cscript //nologo "unzip.vbs" "{ZIP_PATH}" "{CURRENT_PATH}"'
+            f' && del "{ZIP_PATH}"'
+            f' && start "" "{GAME_PATH}" -launch'
+        )
+        
+        subprocess.Popen(command, shell = True)
     except:
         print(f"Couldn't extract {ZIP_NAME} file, please extract it manually.")
         time.sleep(0.5)
