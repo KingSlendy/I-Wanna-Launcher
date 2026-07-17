@@ -57,8 +57,8 @@ def main():
         os.remove("temp-launcher.spec")
         shutil.rmtree("dist")
     except Exception as ex:
-        print(f"Error occurred during the temporary file deletion.\n{ex}")     
+        print(f"Error occurred during the temporary file deletion.\n{ex}")
 
-    
+
 if __name__ == "__main__":
     main()
