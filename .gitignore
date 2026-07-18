@@ -1,2 +1,4 @@
+*.exe
+*.bat
+*.zip
 Generated/*.ico
-Generated/*.exe
