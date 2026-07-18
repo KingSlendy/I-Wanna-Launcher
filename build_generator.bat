@@ -1,7 +1,7 @@
 @echo off
 
-set NAME_ORIGINAL = generator
-set NAME_NEW = "I Wanna Launcher"
+set NAME_ORIGINAL=generator
+set NAME_NEW=launcher
 
 Python38\\python.exe -m PyInstaller -F --icon=Generated\\icon.ico %NAME_ORIGINAL%.py
 
