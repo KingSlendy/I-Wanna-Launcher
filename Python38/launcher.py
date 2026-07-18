@@ -1,4 +1,4 @@
-import json, os, requests, subprocess, sys, time
+import json, requests, shutil, subprocess, sys, tempfile, time
 from pathlib import Path
 from tqdm import tqdm
 from win32api import GetFileVersionInfo, LOWORD, HIWORD
@@ -8,44 +8,66 @@ GITHUB_LINK = f"https://api.github.com/repos/@@USERNAME@@"
 GITHUB_REPO = f"@@NAME_DASHES@@@@USE_RELEASES@@"
 GITHUB_RELEASES = f"{GITHUB_LINK}/{GITHUB_REPO}/releases/latest"
 
-# Names
+# Files
 ZIP_NAME = "@@NAME_DOTS@@.zip"
 TOKEN_NAME = "token.json"
-
-# OS Paths
-CURRENT_PATH = os.getcwd()
-
-# File Paths
-GAME_PATH = ""
-ZIP_PATH = f"{CURRENT_PATH}\\{ZIP_NAME}"
-TOKEN_PATH = f"{CURRENT_PATH}\\{TOKEN_NAME}"
+TRACE_NAME = "trace.txt"
 
 class DownloadProgressBar(tqdm):
-    def update_to(self, b = 1, bsize = 1, tsize = None):
+    def update_to(self, b = 1, bsize = 1, tsize = None) -> None:
         if tsize is not None:
             self.total = tsize
 
         self.update(b * bsize - self.n)
 
 
-def obtain_game_exe():
-    global GAME_PATH
+def write_log(message: str) -> None:
+    log_path = Path.cwd() / TRACE_NAME
 
-    launcher_exe = Path(sys.executable).resolve()
-    other_exes = [exe for exe in launcher_exe.parent.glob("*.exe") if exe.resolve() != launcher_exe]
+    with log_path.open("a", encoding = "utf-8") as file:
+        file.write(f"{message}\n")
+        file.flush()
 
-    if len(other_exes) != 1:
-        raise RuntimeError(f"Expected exactly 1 executable, found {len(other_exes)}.")
-
-    GAME_PATH = str(other_exes[0].resolve())
+    print(message)
 
 
-def get_version_number(path):
+# Obtains the path of the launcher.exe
+def obtain_launcher_path() -> Path:
+    launcher_path = Path(sys.executable)
+    
+    return launcher_path.resolve()
+
+
+# Obtains the path of the game.exe
+def obtain_game_path() -> Path:
+    launcher_path = obtain_launcher_path()
+    game_path = [path for path in launcher_path.parent.glob("*.exe") if path.resolve() != launcher_path]
+
+    if len(game_path) == 0:
+        return None
+    
+    return game_path[0].resolve()
+
+
+# Obtains the path of the updater.upt
+def obtain_updater_path() -> Path:
+    launcher_path = obtain_launcher_path()
+    updater_path = [path for path in launcher_path.parent.glob("*.upt")]
+
+    if len(updater_path) == 0:
+        return None
+    
+    return updater_path[0].resolve()
+
+
+# Obtains the .exe version of the game
+def obtain_game_version() -> str:
+    game_path = obtain_game_path()
     version = (0, 0, 0, 0)
 
-    if os.path.exists(path):
+    if game_path is not None and game_path.is_file():
         try:
-            info = GetFileVersionInfo(path, "\\")
+            info = GetFileVersionInfo(str(game_path), "\\")
             ms = info["FileVersionMS"]
             ls = info["FileVersionLS"]
             version = (HIWORD(ms), LOWORD(ms), HIWORD(ls), LOWORD(ls))
@@ -56,29 +78,84 @@ def get_version_number(path):
     return version
 
 
-def main():
-    if os.path.exists(ZIP_PATH):
-        os.remove(ZIP_PATH)
+def game_execute() -> None:
+    game_path = obtain_game_path()
 
-    # Obtains the .exe of the game
-    obtain_game_exe()
+    if game_path is not None and game_path.is_file():
+        print("Executing @@NAME_FULL@@...")
+        time.sleep(1)
 
-    version = get_version_number(GAME_PATH)
+        subprocess.Popen(
+            [str(game_path), "-launch"],
+            cwd = str(game_path.parent),
+            creationflags = subprocess.CREATE_NO_WINDOW
+        )
+
+        sys.exit()
+    else:
+        time.sleep(1)
+
+
+def game_extract(launcher_path: Path, zip_path: Path) -> None:
+    try:
+        print(f"Extracting and executing @@NAME_FULL@@...")
+        time.sleep(1)
+
+        updater_upt_path = obtain_updater_path()
+        updater_exe_path = Path(tempfile.gettempdir()) / f"{updater_upt_path.stem}.exe"
+
+        if updater_exe_path.is_file():
+            updater_exe_path.unlink()
+
+        shutil.copy2(updater_upt_path, updater_exe_path)
+
+        subprocess.Popen(
+            [
+                str(updater_exe_path),
+                str(zip_path),
+                str(launcher_path)
+            ],
+
+            cwd = launcher_path.parent,
+            creationflags = subprocess.CREATE_NO_WINDOW
+        )
+
+        sys.exit()
+    except Exception as ex:
+        write_log(f"Couldn't extract {ZIP_NAME} file, please extract it manually.\n{ex}")
+
+
+def main() -> None:
+    if len(sys.argv) > 1 and sys.argv[1] == "-launch":
+        game_execute()
+        return
+    
+    launcher_path = obtain_launcher_path()
+
+    # Deletes the game.zip file if it exists in the directory
+    zip_path = Path(launcher_path.parent) / ZIP_NAME
+
+    if zip_path.is_file():
+        zip_path.unlink()
+
+    # Read the game version from the game.exe file
+    version = obtain_game_version()
 
     if version == "-1.-1.-1.-1":
-        print("Error validating current version.")
-        execute()
+        write_log("Error validating current version.")
+        game_execute()
         return
 
     print(f"Current version: {version}")
     print("Validating new version...")
 
-    # Reads the token if token.json exists in the directory
+    # Reads the token.json file if it exists in the directory
+    token_path = Path(launcher_path.parent) / TOKEN_NAME
     request_token = None
 
     try:
-        if os.path.exists(TOKEN_PATH):
-            with open(TOKEN_PATH, "r") as file:
+        if token_path.is_file():
+            with token_path.open("r") as file:
                 request_token = json.load(file)["token"]
 
             if request_token:
@@ -86,8 +163,8 @@ def main():
             else:
                 request_token = None
     except (OSError, json.JSONDecodeError, TypeError) as ex:
-        print(f"Error reading token from {TOKEN_NAME} file.\n{ex}")
-        execute()
+        write_log(f"Error reading token from {TOKEN_NAME} file.\n{ex}")
+        game_execute()
         return
 
     # Makes the first request to get the latest version
@@ -104,20 +181,20 @@ def main():
             game_release = response.json()
             new_game_version = game_release["tag_name"]
     except requests.exceptions.HTTPError as ex:
-        print(f"An error occurred during the version request process.\n{ex}")
-        execute()
+        write_log(f"An error occurred during the version request process.\n{ex}")
+        game_execute()
         return
 
     # Game is up-to-date so it doesn't need to download anything
     if new_game_version == version:
         print("Game is up-to-date!")
-        execute()
+        game_execute()
         return
 
     print(f"Update version found: {new_game_version}!")
     print(f"Downloading new version...")
 
-    # Finds for the latest release ZIP file
+    # Finds the latest release ZIP file
     url_game_zip = None
 
     for asset in game_release["assets"]:
@@ -125,8 +202,8 @@ def main():
             url_game_zip = asset["url"]
             break
     else:
-        print(f"Could not find {ZIP_NAME} in the latest release.")
-        execute()
+        write_log(f"Could not find {ZIP_NAME} in the latest release.")
+        game_execute()
         return
 
     # Makes the second request to download the ZIP file
@@ -143,44 +220,18 @@ def main():
             total_size = int(response.headers.get("content-length", 0))
 
             with DownloadProgressBar(total = total_size, unit = "B", unit_scale = True, miniters = 1, desc = f"@@NAME_FULL@@ {new_game_version}") as bar:
-                with open(ZIP_PATH, "wb") as zip:
+                with zip_path.open("wb") as zip:
                     for chunk in response.iter_content(chunk_size = 1024 * 256):
                         if chunk:
                             zip.write(chunk)
                             bar.update(len(chunk))
     except requests.exceptions.HTTPError as ex:
-        print(f"An error occurred downloading {ZIP_NAME} from the latest release.\n{ex}")
-        execute()
+        write_log(f"An error occurred downloading {ZIP_NAME} from the latest release.\n{ex}")
+        game_execute()
         return
 
     print(f"@@NAME_FULL@@ {new_game_version} downloaded successfully!")
-    print(f"Extracting and executing @@NAME_FULL@@...")
-
-    extract_execute()
-
-
-def execute():
-    if os.path.exists(GAME_PATH):
-        print("Executing @@NAME_FULL@@...")
-        time.sleep(1)
-        subprocess.Popen(f"start \"\" \"{GAME_PATH}\" -launch", shell = True)
-        time.sleep(0.5)
-    else:
-        time.sleep(1)
-
-
-def extract_execute():
-    try:
-        command = (
-            f'cscript //nologo "unzip.vbs" "{ZIP_PATH}" "{CURRENT_PATH}"'
-            f' && del "{ZIP_PATH}"'
-            f' && start "" "{GAME_PATH}" -launch'
-        )
-        
-        subprocess.Popen(command, shell = True)
-    except:
-        print(f"Couldn't extract {ZIP_NAME} file, please extract it manually.")
-        time.sleep(0.5)
+    game_extract(launcher_path, zip_path)
 
 
 if __name__ == "__main__":
