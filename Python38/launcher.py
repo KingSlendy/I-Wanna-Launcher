@@ -1,4 +1,5 @@
-import json, os, requests, subprocess, time
+import json, os, requests, subprocess, sys, time
+from pathlib import Path
 from tqdm import tqdm
 from win32api import GetFileVersionInfo, LOWORD, HIWORD
 
@@ -8,7 +9,6 @@ GITHUB_REPO = f"@@NAME_DASHES@@@@USE_RELEASES@@"
 GITHUB_RELEASES = f"{GITHUB_LINK}/{GITHUB_REPO}/releases/latest"
 
 # Names
-GAME_NAME = "Game.exe"
 ZIP_NAME = "@@NAME_DOTS@@.zip"
 TOKEN_NAME = "token.json"
 
@@ -16,7 +16,7 @@ TOKEN_NAME = "token.json"
 CURRENT_PATH = os.getcwd()
 
 # File Paths
-GAME_PATH = f"{CURRENT_PATH}\\{GAME_NAME}"
+GAME_PATH = ""
 ZIP_PATH = f"{CURRENT_PATH}\\{ZIP_NAME}"
 TOKEN_PATH = f"{CURRENT_PATH}\\{TOKEN_NAME}"
 
@@ -26,6 +26,18 @@ class DownloadProgressBar(tqdm):
             self.total = tsize
 
         self.update(b * bsize - self.n)
+
+
+def obtain_game_exe():
+    global GAME_PATH
+
+    launcher_exe = Path(sys.executable).resolve()
+    other_exes = [exe for exe in launcher_exe.parent.glob("*.exe") if exe.resolve() != launcher_exe]
+
+    if len(other_exes) != 1:
+        raise RuntimeError(f"Expected exactly 1 executable, found {len(other_exes)}.")
+
+    GAME_PATH = str(other_exes[0].resolve())
 
 
 def get_version_number(path):
@@ -47,6 +59,9 @@ def get_version_number(path):
 def main():
     if os.path.exists(ZIP_PATH):
         os.remove(ZIP_PATH)
+
+    # Obtains the .exe of the game
+    obtain_game_exe()
 
     version = get_version_number(GAME_PATH)
 
@@ -127,7 +142,7 @@ def main():
             response.raise_for_status()
             total_size = int(response.headers.get("content-length", 0))
 
-            with DownloadProgressBar(total = total_size, unit = "B", unit_scale = True, miniters = 1, desc = "@@NAME_FULL@@") as bar:
+            with DownloadProgressBar(total = total_size, unit = "B", unit_scale = True, miniters = 1, desc = f"@@NAME_FULL@@ {new_game_version}") as bar:
                 with open(ZIP_PATH, "wb") as zip:
                     for chunk in response.iter_content(chunk_size = 1024 * 256):
                         if chunk:
@@ -139,7 +154,7 @@ def main():
         return
 
     print(f"@@NAME_FULL@@ {new_game_version} downloaded successfully!")
-    print(f"Extracting and executing {ZIP_NAME}...")
+    print(f"Extracting and executing @@NAME_FULL@@...")
 
     extract_execute()
 
