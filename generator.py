@@ -18,7 +18,7 @@ def main():
     releases = releases if releases in ("y", "n") else "y"
     releases = "-Releases" if releases == "y" else ""
     temp_launcher_folder = f"{GENERATED_FOLDER}\\temp-launcher.exe"
-    launcher_folder = f"{GENERATED_FOLDER}\\{name_full}.exe"
+    launcher_folder = f"{GENERATED_FOLDER}\\Launcher.exe"
     icon_folder = f"{GENERATED_FOLDER}\\icon.ico"
     icon = ""
 

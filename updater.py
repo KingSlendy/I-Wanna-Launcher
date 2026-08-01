@@ -21,7 +21,7 @@ def extract_update(zip_path: Path, destination_path: Path) -> None:
         for member in zip.infolist():
             target_path = (destination_path / member.filename).resolve()
 
-            if target_path == updater_path:
+            if target_path in (updater_path):
                 print(f"Skipping running extractor: {member.filename}")
                 continue
 
@@ -44,15 +44,17 @@ def main() -> None:
         launcher_path.parent.mkdir(parents = True, exist_ok = True)
 
         print(f"Extracting {zip_path.name} to: {launcher_path.parent}")
+        permission_ex = None
 
         for _ in range(20):
             try:
                 extract_update(zip_path, launcher_path.parent)
                 break
-            except PermissionError:
+            except PermissionError as ex:
                 time.sleep(0.1)
+                permission_ex = ex
         else:
-            raise OSError(f"ZIP couldn't be extracted.")
+            write_log(f"File from the ZIP couldn't be extracted:\n{permission_ex}")
 
         print("ZIP extracted successfully.")
 
@@ -72,8 +74,8 @@ def main() -> None:
             cwd = str(launcher_path.parent),
             creationflags = subprocess.CREATE_NO_WINDOW
         )
-    except (OSError, zipfile.BadZipFile) as error:
-        write_log(f"Failed to install update.\n{error}")
+    except (zipfile.BadZipFile, FileNotFoundError) as ex:
+        write_log(f"Failed to install update.\n{ex}")
         raise SystemExit(1)
 
 
